@@ -9,7 +9,7 @@
 "window_size": 5,
 "batch_size": 2048,
 "epochs": 4,
-"multihead": false,
+"num_heads": 1,
 "preprocessed": "{DATASET_ROOT}/{DATASET_PREFIX}",
 "working": "{WORKING_ROOT}/{DATASET_PREFIX}",
 "modelname": "{WORKING_ROOT}/{DATASET_VERSION}.pt",
