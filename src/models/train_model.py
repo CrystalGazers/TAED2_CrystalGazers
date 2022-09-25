@@ -11,9 +11,20 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
 from transformer import Predictor
-from codecarbon import EmissionTracker
+from codecarbon import EmissionsTracker
+import json
+import boto3
+import io
 
-# read config.json
+# Setting hyperparameters
+with open('models/config.json') as config:
+    hyperparams = json.load(config)
+
+def download_s3(bucket_name, path_to_file):
+    s3_client = boto3.client('s3')
+    obj = s3_client.get_object(Bucket=bucket_name, Key=path_to_file)
+    f = io.BytesIO(obj["Body"].read())
+    return f
 
 class Vocabulary(object):
     def __init__(self, pad_token='<pad>', unk_token='<unk>', eos_token='<eos>'):
@@ -49,8 +60,10 @@ class Vocabulary(object):
             pickle.dump(self.__dict__, f)
 
     def load(self, filename):
-        with open(filename, 'rb') as f:
-            self.__dict__.update(pickle.load(f))
+        # with open(filename, 'rb') as f:
+        #     self.__dict__.update(pickle.load(f))
+        f = download_s3(hyperparams['BUCKET_NAME'], filename)
+        self.__dict__.update(pickle.load(f))
 
 
 def batch_generator(idata, target, batch_size, shuffle=True):
@@ -73,8 +86,9 @@ def load_preprocessed_dataset(prefix):
     token_vocab = Vocabulary()
     token_vocab.load(f'{prefix}.vocab')
     data = []
-    for part in ['train', 'valid', 'test']:
-        with np.load(f'{prefix}.{part}.npz') as set_data:
+    for part in ['train', 'valid']:
+        file = download_s3(hyperparams['BUCKET_NAME'], f'{prefix}.{part}.npz')
+        with np.load(file) as set_data:
             idata, target = set_data['idata'], set_data['target']
             data.append((idata, target))
             print(f'Number of samples ({part}): {len(target)}')
@@ -144,7 +158,7 @@ def validate(model, criterion, idata, target, batch_size, device):
         return np.concatenate(y_pred)
 
 # Create working dir (check this!!)
-pathlib.Path(WORKING_ROOT).mkdir(parents=True, exist_ok=True)
+# pathlib.Path(WORKING_ROOT).mkdir(parents=True, exist_ok=True)
 
 # Select device
 if torch.cuda.is_available():
@@ -154,10 +168,10 @@ else:
     print("WARNING: Training without GPU can be very slow!")
 
 # Change this according to config
-vocab, data = load_preprocessed_dataset(hyperparams.preprocessed)
+vocab, data = load_preprocessed_dataset(hyperparams['preprocessed'])
 
 # Load model
-model = Predictor(len(vocab), hyperparams.embedding_dim, num_heads=hyperparams.num_heads).to(device)
+model = Predictor(len(vocab), hyperparams['embedding_dim'], num_heads=hyperparams['num_heads']).to(device)
 
 print(model)
 for name, param in model.named_parameters():
@@ -167,17 +181,17 @@ print(f'TOTAL                {sum(p.numel() for p in model.parameters())}')
 optimizer = torch.optim.Adam(model.parameters())
 criterion = nn.CrossEntropyLoss(reduction='sum')
 
-tracker = EmissionTracker()
+tracker = EmissionsTracker()
 tracker.start()
 
 train_accuracy = []
 wiki_accuracy = []
 valid_accuracy = []
-for epoch in range(hyperparams.epochs):
-    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], hyperparams.batch_size, device, log=True)
+for epoch in range(hyperparams['epochs']):
+    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], hyperparams['batch_size'], device, log=True)
     train_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | train accuracy={acc:.1f}%, train loss={loss:.2f}')
-    acc, loss = validate(model, criterion, data[1][0], data[1][1], hyperparams.batch_size, device)
+    acc, loss = validate(model, criterion, data[1][0], data[1][1], hyperparams['batch_size'], device)
     wiki_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
 
@@ -185,4 +199,4 @@ for epoch in range(hyperparams.epochs):
 tracker.stop()
 
 # Save model
-torch.save(model.state_dict(), hyperparams.modelname)
+torch.save(model.state_dict(), hyperparams['modelname'])

@@ -10,7 +10,7 @@
 "batch_size": 2048,
 "epochs": 4,
 "num_heads": 1,
-"preprocessed": "{DATASET_ROOT}/{DATASET_PREFIX}",
+"preprocessed": "archive/ca-2/ca.wiki",
 "working": "{WORKING_ROOT}/{DATASET_PREFIX}",
 "modelname": "{WORKING_ROOT}/{DATASET_VERSION}.pt",
 "train": true
