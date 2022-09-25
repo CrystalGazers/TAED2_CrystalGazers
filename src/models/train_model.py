@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
 import math
+from codecarbon import EmissionTracker
 
 # read config.json
 
@@ -124,7 +125,7 @@ else:
     print("WARNING: Training without GPU can be very slow!")
 
 # Change this according to config
-vocab, data = load_preprocessed_dataset(params.preprocessed)
+vocab, data = load_preprocessed_dataset(hyperparams.preprocessed)
 
 # 'El Periodico' validation dataset
 valid_x_df = pd.read_csv(f'{COMPETITION_ROOT}/x_valid.csv')
@@ -135,7 +136,7 @@ valid_y = valid_y_df['token'].apply(vocab.get_index).to_numpy(dtype='int32')
 
 # Load model somehow
 
-model = Predictor(len(vocab), params.embedding_dim).to(device)
+model = Predictor(len(vocab), hyperparams.embedding_dim).to(device)
 
 print(model)
 for name, param in model.named_parameters():
@@ -145,19 +146,24 @@ print(f'TOTAL                {sum(p.numel() for p in model.parameters())}')
 optimizer = torch.optim.Adam(model.parameters())
 criterion = nn.CrossEntropyLoss(reduction='sum')
 
+tracker = EmissionTracker()
+tracker.start()
+
 train_accuracy = []
 wiki_accuracy = []
 valid_accuracy = []
-for epoch in range(params.epochs):
-    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], params.batch_size, device, log=True)
+for epoch in range(hyperparams.epochs):
+    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], hyperparams.batch_size, device, log=True)
     train_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | train accuracy={acc:.1f}%, train loss={loss:.2f}')
-    acc, loss = validate(model, criterion, data[1][0], data[1][1], params.batch_size, device)
+    acc, loss = validate(model, criterion, data[1][0], data[1][1], hyperparams.batch_size, device)
     wiki_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
-    acc, loss = validate(model, criterion, valid_x, valid_y, params.batch_size, device)
+    acc, loss = validate(model, criterion, valid_x, valid_y, hyperparams.batch_size, device)
     valid_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (El Periódico)')
 
+tracker.stop()
+
 # Save model
-torch.save(model.state_dict(), params.modelname)
+torch.save(model.state_dict(), hyperparams.modelname)
