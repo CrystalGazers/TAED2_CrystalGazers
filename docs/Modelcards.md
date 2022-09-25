@@ -36,5 +36,6 @@ dataset:
 metrics:
   - accuracy
   - CrossEntropyLoss
+  - CO2 emission
 
 ---
