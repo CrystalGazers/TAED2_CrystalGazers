@@ -157,7 +157,7 @@ else:
 vocab, data = load_preprocessed_dataset(hyperparams.preprocessed)
 
 # Load model
-model = Predictor(len(vocab), hyperparams.embedding_dim).to(device)
+model = Predictor(len(vocab), hyperparams.embedding_dim, num_heads=hyperparams.num_heads).to(device)
 
 print(model)
 for name, param in model.named_parameters():
