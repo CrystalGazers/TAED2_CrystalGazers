@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
-import math
+from transformer import Predictor
 from codecarbon import EmissionTracker
 
 # read config.json
@@ -113,6 +113,35 @@ def train(model, criterion, optimizer, idata, target, batch_size, device, log=Fa
         print(f'Train: wpb={ntokens//niterations}, num_updates={niterations}, accuracy={accuracy:.1f}, loss={total_loss:.2f}')
     return accuracy, total_loss
 
+def validate(model, criterion, idata, target, batch_size, device):
+    model.eval()
+    total_loss = 0
+    ncorrect = 0
+    ntokens = 0
+    niterations = 0
+    y_pred = []
+    with torch.no_grad():
+        for X, y in batch_generator(idata, target, batch_size, shuffle=False):
+            # Get input and target sequences from batch
+            X = torch.tensor(X, dtype=torch.long, device=device)
+            output = model(X)
+            if target is not None:
+                y = torch.tensor(y, dtype=torch.long, device=device)
+                loss = criterion(output, y)
+                total_loss += loss.item()
+                ncorrect += (torch.max(output, 1)[1] == y).sum().item()
+                ntokens += y.numel()
+                niterations += 1
+            else:
+                pred = torch.max(output, 1)[1].detach().to('cpu').numpy()
+                y_pred.append(pred)
+
+    if target is not None:
+        total_loss = total_loss / ntokens
+        accuracy = 100 * ncorrect / ntokens
+        return accuracy, total_loss
+    else:
+        return np.concatenate(y_pred)
 
 # Create working dir (check this!!)
 pathlib.Path(WORKING_ROOT).mkdir(parents=True, exist_ok=True)
@@ -127,15 +156,7 @@ else:
 # Change this according to config
 vocab, data = load_preprocessed_dataset(hyperparams.preprocessed)
 
-# 'El Periodico' validation dataset
-valid_x_df = pd.read_csv(f'{COMPETITION_ROOT}/x_valid.csv')
-tokens = valid_x_df.columns[1:]
-valid_x = valid_x_df[tokens].apply(vocab.get_index).to_numpy(dtype='int32')
-valid_y_df = pd.read_csv(f'{COMPETITION_ROOT}/y_valid.csv')
-valid_y = valid_y_df['token'].apply(vocab.get_index).to_numpy(dtype='int32')
-
-# Load model somehow
-
+# Load model
 model = Predictor(len(vocab), hyperparams.embedding_dim).to(device)
 
 print(model)
@@ -159,9 +180,7 @@ for epoch in range(hyperparams.epochs):
     acc, loss = validate(model, criterion, data[1][0], data[1][1], hyperparams.batch_size, device)
     wiki_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
-    acc, loss = validate(model, criterion, valid_x, valid_y, hyperparams.batch_size, device)
-    valid_accuracy.append(acc)
-    print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (El Periódico)')
+
 
 tracker.stop()
 
