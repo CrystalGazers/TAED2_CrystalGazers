@@ -10,6 +10,11 @@ The model file gives the possibility to introduce multihead attention. At the en
 The training of the model is based on Cross Entropy Loss and the parameters are updated by Adam optimizer, which is chosen to be the optimum empirically. The script is developped in Python using `torch` , `numpy` and `pandas` libraries among others.
 
 The model were created by [Jose A.R. Fonollosa](https://www.kaggle.com/jarfo1)
+
+The observed accuracy metric after training are the following:
+Single-head: 39.27%
+Multi-head: 40.34%
+
 ## Dataset
 The Wikipedia dataset is a collection of scraped Wikipedia pages. The dataset is defined in catalan language, thus the model will be trained to recognize input exclusively in catalan.
 The dataset can be found [here](https://www.kaggle.com/datasets/jarfo1/viquipdia).
