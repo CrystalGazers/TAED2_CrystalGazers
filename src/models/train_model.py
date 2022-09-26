@@ -194,6 +194,7 @@ with mlflow.start_run():
     mlflow.log_param("embedding_dim", hyperparams['embedding_dim'])
     mlflow.log_param("window_size", hyperparams['window_size'])
     mlflow.log_param("batch_size", hyperparams['batch_size'])
+    mlflow.log_param("dataset_version", hyperparams['DATASET_VERSION'])
     for epoch in range(hyperparams['epochs']):
         acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], hyperparams['batch_size'], device, log=True)
         train_accuracy.append(acc)
