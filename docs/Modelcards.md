@@ -3,7 +3,7 @@ This universitary project aims to train a ML model with the Wikipedia dataset in
 
 ## Model description
 
-To archieve the desired prediction we will use a Transformer model with one or more layers. A transformer is a model that adopts the mechanism of self-attention, deferentially weighting the significance of each part of the input data. The model will be trained on text data which was originally created by humans. 
+To archieve the desired prediction we will use a Transformer model with two layers. A transformer is a model that adopts the mechanism of self-attention, deferentially weighting the significance of each part of the input data. The model will be trained on text data which was originally created by humans. 
 
 The model file gives the possibility to introduce multihead attention. At the end, there will be an accuracy comparison based on the performance of both methods. 
 
