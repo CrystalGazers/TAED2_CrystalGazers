@@ -12,6 +12,7 @@ import torch.nn.functional as F
 import pandas as pd
 from transformer import Predictor
 from codecarbon import EmissionsTracker
+import mlflow
 import json
 import boto3
 import io
@@ -184,19 +185,31 @@ criterion = nn.CrossEntropyLoss(reduction='sum')
 tracker = EmissionsTracker()
 tracker.start()
 
-train_accuracy = []
-wiki_accuracy = []
-valid_accuracy = []
-for epoch in range(hyperparams['epochs']):
-    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], hyperparams['batch_size'], device, log=True)
-    train_accuracy.append(acc)
-    print(f'| epoch {epoch:03d} | train accuracy={acc:.1f}%, train loss={loss:.2f}')
-    acc, loss = validate(model, criterion, data[1][0], data[1][1], hyperparams['batch_size'], device)
-    wiki_accuracy.append(acc)
-    print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
-
+with mlflow.start_run():
+    train_accuracy = []
+    wiki_accuracy = []
+    valid_accuracy = []
+    mlflow.log_param("num_heads", hyperparams['num_heads'])
+    mlflow.log_param("epochs", hyperparams['epochs'])
+    mlflow.log_param("embedding_dim", hyperparams['embedding_dim'])
+    mlflow.log_param("window_size", hyperparams['window_size'])
+    mlflow.log_param("batch_size", hyperparams['batch_size'])
+    for epoch in range(hyperparams['epochs']):
+        acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], hyperparams['batch_size'], device, log=True)
+        train_accuracy.append(acc)
+        mlflow.log_metric("training_acc", acc)
+        mlflow.log_metric("training_loss", loss)
+        print(f'| epoch {epoch:03d} | train accuracy={acc:.1f}%, train loss={loss:.2f}')
+        acc, loss = validate(model, criterion, data[1][0], data[1][1], hyperparams['batch_size'], device)
+        wiki_accuracy.append(acc)
+        mlflow.log_metric("valid_acc", acc)
+        mlflow.log_metric("valid_loss", loss)
+        print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
+    
+    mlflow.pytorch.save_model(model, f"./artifacts/{hyperparams['modelname']}")
 
 tracker.stop()
+
 
 # Save model
 torch.save(model.state_dict(), hyperparams['modelname'])
