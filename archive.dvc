@@ -1,0 +1,5 @@
+outs:
+- etag: b99dcfe4d644aea51d80fc896b78bf60.dir
+  size: 3412650223
+  nfiles: 19
+  path: s3://crystal-gazers/archive/
