@@ -16,10 +16,14 @@ import mlflow
 import json
 import boto3
 import io
+import mlflow
 
 # Setting hyperparameters
 with open('models/config.json') as config:
     hyperparams = json.load(config)
+
+boto3.setup_default_session(profile_name=hyperparams['AWS_PROFILE'])
+
 
 def download_s3(bucket_name, path_to_file):
     s3_client = boto3.client('s3')
@@ -164,6 +168,9 @@ def validate(model, criterion, idata, target, batch_size, device):
 # Select device
 if torch.cuda.is_available():
     device = torch.device('cuda')
+elif torch.backends.mps.is_available():
+    device = torch.device('mps')
+    print("Training on MPS")
 else:
     device = torch.device('cpu')
     print("WARNING: Training without GPU can be very slow!")
@@ -210,7 +217,6 @@ with mlflow.start_run():
     mlflow.pytorch.save_model(model, f"./artifacts/{hyperparams['modelname']}")
 
 tracker.stop()
-
 
 # Save model
 torch.save(model.state_dict(), hyperparams['modelname'])
