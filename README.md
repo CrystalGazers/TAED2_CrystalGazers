@@ -1,7 +1,10 @@
 CrystalGazers
 ==============================
 
-A short description of the project.
+The main goal of this project is to apply good practices of definition of a data science project and present the results of the used techniques. Crystal Gazers is an organization that predicts a word given a sequence of other words as context around it. The NLP processing will be done by training a Transformer model with a large dataset based on Wikipedia articles.
+
+The project goal is to successfully train the model and obtain an accuracy superior to the defined threshold. The default metric to evaluate the performance of the model is accuracy. The model will be considered correctly trained when an accuracy of at least 35% is achieved.
+
 
 Project Organization
 ------------
