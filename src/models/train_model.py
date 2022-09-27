@@ -19,7 +19,8 @@ import io
 import mlflow
 
 # Setting hyperparameters
-with open('models/config.json') as config:
+print(os.getcwd())
+with open('../../models/config.json') as config:
     hyperparams = json.load(config)
 
 boto3.setup_default_session(profile_name=hyperparams['AWS_PROFILE'])
@@ -217,6 +218,3 @@ with mlflow.start_run():
     mlflow.pytorch.save_model(model, f"./artifacts/{hyperparams['modelname']}")
 
 tracker.stop()
-
-# Save model
-torch.save(model.state_dict(), hyperparams['modelname'])
