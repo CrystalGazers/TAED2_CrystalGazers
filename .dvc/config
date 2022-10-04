@@ -1,4 +1,8 @@
 [core]
     remote = storage
+[cache]
+    s3 = s3cache
 ['remote "storage"']
     url = s3://crystal-gazers/archive/
+['remote "s3cache"']
+    url = s3://crystal-gazers/cache

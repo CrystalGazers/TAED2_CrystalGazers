@@ -48,35 +48,44 @@ Catalan
 ```
 {
   'ca-2': [
-    'ca.wiki.test.tokens',
-    'ca.wiki.train.tokens',
-    'ca.wiki.valid.tokens']
+    'ca.wiki.test.tokens.nopunct',
+    'ca.wiki.test.npz',
+    'ca.wiki.train.tokens.nopunct',
+    'ca.wiki.train.tokens.nopunct.dic',
+    'ca.wiki.train.npz',
+    'ca.wiki.valid.tokens.nopunct',
+    'ca.wiki.valid.npz']
   'ca-100': [
     'ca.wiki.test.tokens',
+    'ca.wiki.test.tokens.nopunct',
+    'ca.wiki.test.npz',
     'ca.wiki.train.tokens',
-    'ca.wiki.valid.tokens']
-  'ca-all': [
-    'ca.wiki.test.tokens',
-    'ca.wiki.train.tokens',
-    'ca.wiki.valid.tokens']
+    'ca.wiki.train.tokens.nopunct',
+    'ca.wiki.train.tokens.nopunct.dic',
+    'ca.wiki.train.npz',
+    'ca.wiki.valid.tokens',
+    'ca.wiki.valid.tokens.nopunct',
+    'ca.wiki.valid.npz']
 }
 ```
 
 ### Data fields
 
-Plain text
+- ```.token``` files: plain text
+- ```.npz files```: Two .npy arrays of vocabulary indexes, one for 6 context words and one for target central word. Each line in one corresponds with a line in other.
 
 ### Data splits
 
+Reporting the sizes of the ```.token.nopunct``` files
+
 |                         | train  | validation | test |
 |-------------------------|-------:|-----------:|-----:|
-| ca-2                    |10.64MB |1.07MB      |1.06MB|
-| ca-100                  |528.96MB|1.07MB      |1.06MB|
-| ca-all                  |1.32GB  |1.07MB      |1.06MB|
+| ca-2                    |9.1MB   |1.0MB       |1.0MB|
+| ca-100                  |451.8MB |1.0MB       |1.0MB|
 
 ## Dataset creation
 
-The dataset has been created by scraping all articles in catalan from Wikipedia. The original text has been crowdsourced by thousands of anonymous volunteers.
+The dataset has been created by scraping all articles in catalan from Wikipedia. The original text has been crowdsourced by thousands of anonymous volunteers. Derived files have been created by preprocessing the original plain text files.
 
 ## Annotations
 
