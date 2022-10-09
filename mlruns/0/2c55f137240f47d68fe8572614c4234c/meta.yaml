@@ -1,0 +1,16 @@
+artifact_uri: file:///Users/jguasch/Desktop/Universitat/TAED/TAED2_CrystalGazers/mlruns/0/2c55f137240f47d68fe8572614c4234c/artifacts
+deleted_time: 1664213826617
+end_time: 1664192163490
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: deleted
+name: ''
+run_id: 2c55f137240f47d68fe8572614c4234c
+run_uuid: 2c55f137240f47d68fe8572614c4234c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1664187798430
+status: 3
+tags: []
+user_id: jguasch
