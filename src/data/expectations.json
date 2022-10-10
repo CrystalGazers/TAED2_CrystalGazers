@@ -1,0 +1,149 @@
+[
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "L3",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  },
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "L2",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  },
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "L1",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  },
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "R1",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  },
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "R2",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  },
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "R3",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  },
+  {
+    "expectation_config": {
+      "expectation_type": "_expect_column_values_to_be_of_type__aggregate",
+      "meta": {},
+      "kwargs": {
+        "column": "T",
+        "type_": "int32",
+        "result_format": "BASIC"
+      }
+    },
+    "exception_info": {
+      "raised_exception": false,
+      "exception_traceback": null,
+      "exception_message": null
+    },
+    "result": {
+      "observed_value": "int32"
+    },
+    "meta": {},
+    "success": true
+  }
+]
