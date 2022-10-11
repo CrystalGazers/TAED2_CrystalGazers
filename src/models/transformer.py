@@ -1,31 +1,22 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import math
-
-def attention(query, key, value, mask=None, dropout=None): # not used
-    "Compute 'Scaled Dot Product Attention'"
-    d_k = query.size(-1)
-    scores = torch.matmul(query, key.transpose(-2, -1)) \
-             / math.sqrt(d_k)
-    if mask is not None:
-        scores = scores.masked_fill(mask == 0, -Inf)
-    p_attn = F.softmax(scores, dim = -1)
-    if dropout is not None:
-        p_attn = dropout(p_attn)
-    return torch.matmul(p_attn, value), p_attn
+import torch
+from torch import nn
+import torch.nn.functional as F
 
 class SelfAttention(nn.Module):
+    """Class to implement self attention mechanism in Neural Network."""
     def __init__(self, embed_dim, bias=True, num_heads=1):
         super().__init__()
         self.k_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
         self.v_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
         self.q_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
         self.out_proj = nn.Linear(embed_dim, embed_dim, bias=bias)
-        self.multihead_attn = nn.MultiheadAttention(embed_dim, num_heads, bias=bias, batch_first=True)
+        self.multihead_attn = nn.MultiheadAttention(
+            embed_dim, num_heads, bias=bias, batch_first=True)
         self.reset_parameters()
 
     def reset_parameters(self):
+        """Reset k, v, q and weights."""
         # Empirically observed the convergence to be much better with the scaled initialization
         nn.init.xavier_uniform_(self.k_proj.weight, gain=1 / math.sqrt(2))
         nn.init.xavier_uniform_(self.v_proj.weight, gain=1 / math.sqrt(2))
@@ -38,6 +29,7 @@ class SelfAttention(nn.Module):
     # W = Number of context words (left + right)
     # E = embedding_dim
     def forward(self, x):
+        """Forward step in the self-attention module."""
         # x shape is (B, W, E)
         q = self.q_proj(x)
         # q shape is (B, W, E)
@@ -53,7 +45,8 @@ class SelfAttention(nn.Module):
 
 
 class TransformerLayer(nn.Module):
-    def __init__(self, d_model, dim_feedforward=512, dropout=0.1, activation="relu", num_heads=1):
+    """Class that implements a transformer layer."""
+    def __init__(self, d_model, dim_feedforward=512, dropout=0.1, num_heads=1):
         super().__init__()
         self.self_attn = SelfAttention(d_model, num_heads=num_heads)
         # Implementation of Feed-forward model
@@ -66,6 +59,7 @@ class TransformerLayer(nn.Module):
         self.dropout2 = nn.Dropout(dropout)
 
     def forward(self, src):
+        """Forward step in the transformer layer."""
         src2 = self.self_attn(src)
         src = src + self.dropout1(src2)
         src = self.norm1(src)
@@ -76,6 +70,7 @@ class TransformerLayer(nn.Module):
 
 
 class Predictor(nn.Module):
+    """Class to predict a word given a context window around it."""
     def __init__(self, num_embeddings, embedding_dim, context_words=6, num_heads=1):
         super().__init__()
         self.emb = nn.Embedding(num_embeddings, embedding_dim, padding_idx=0)
@@ -89,9 +84,10 @@ class Predictor(nn.Module):
     # W = Number of context words (left + right)
     # E = embedding_dim
     # V = num_embeddings (number of words)
-    def forward(self, input):
+    def forward(self, inp):
+        """Forward step for the prediction."""
         # input shape is (B, W)
-        e = self.emb(input)
+        e = self.emb(inp)
         # e shape is (B, W, E)
         u = e + self.position_embedding
         # u shape is (B, W, E)
@@ -104,3 +100,4 @@ class Predictor(nn.Module):
         y = self.lin(x)
         # y shape is (B, V)
         return y
+        

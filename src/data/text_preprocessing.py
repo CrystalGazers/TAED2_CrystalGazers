@@ -1,15 +1,12 @@
 from types import SimpleNamespace
 from collections import Counter
-import os
 import re
 import pathlib
-import subprocess
-import array
 import pickle
 import numpy as np
-import pandas as pd
 
-class Vocabulary(object):
+class Vocabulary:
+    """This class defines the vocabulary that the NLP model will work with."""
     def __init__(self, pad_token='<pad>', unk_token='<unk>', eos_token='<eos>'):
         self.token2idx = {}
         self.idx2token = []
@@ -24,58 +21,67 @@ class Vocabulary(object):
             self.eos_index = self.add_token(eos_token)
 
     def add_token(self, token):
+        """Function to add a new token."""
         if token not in self.token2idx:
             self.idx2token.append(token)
             self.token2idx[token] = len(self.idx2token) - 1
         return self.token2idx[token]
 
     def get_index(self, token):
+        """Get index from token."""
         if isinstance(token, str):
             return self.token2idx.get(token, self.unk_index)
-        else:
-            return [self.token2idx.get(t, self.unk_index) for t in token]
+        return [self.token2idx.get(t, self.unk_index) for t in token]
 
     def get_token(self, index):
+        """Get token from index."""
         return self.idx2token[index]
 
     def __len__(self):
+        """Return length of vocabulary."""
         return len(self.idx2token)
 
     def save(self, filename):
-        with open(filename, 'wb') as f:
-            pickle.dump(self.__dict__, f)
+        """Save vocabulary into pickle file."""
+        with open(filename, 'wb') as file:
+            pickle.dump(self.__dict__, file)
 
     def load(self, filename):
-        with open(filename, 'rb') as f:
-            self.__dict__.update(pickle.load(f))
+        """Load vocabulary from pickle file."""
+        with open(filename, 'rb') as file:
+            self.__dict__.update(pickle.load(file))
 
 class Punctuation:
+    """Class that manages punctuation."""
     html = re.compile(r'&apos;|&quot;')
     punctuation = re.compile(r'[^\w\s·]|_')
     spaces = re.compile(r'\s+')
     ela_geminada = re.compile(r'l · l')
 
-    def strip(self, s):
-        '''
+    def strip(self, sent):
+        """
         Remove all punctuation characters.
-        '''
-        s = self.html.sub(' ', s)
-        s = self.punctuation.sub(' ', s)
-        s = self.spaces.sub(' ', s).strip()
-        s = self.ela_geminada.sub('l·l', s)
-        return s
+        """
+        sent = self.html.sub(' ', sent)
+        sent = self.punctuation.sub(' ', sent)
+        sent = self.spaces.sub(' ', sent).strip()
+        sent = self.ela_geminada.sub('l·l', sent)
+        return sent
 
 def remove_punctuation(input_path, output_path):
+    """Remove punctuation for each line."""
     punc = Punctuation()
-    with open(input_path, 'r', encoding='utf-8') as inpf, open(output_path, 'w', encoding='utf-8') as outf:
+    with open(input_path, 'r', encoding='utf-8') as inpf, \
+        open(output_path, 'w', encoding='utf-8') as outf:
         for line in inpf:
             line = punc.strip(line)
             print(line, file=outf)
 
 def get_token_counter(file_path):
+    """Count tokens in file."""
     counter = Counter()
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
             line = line.strip()
             if line:
                 tokens = line.split()
@@ -83,6 +89,7 @@ def get_token_counter(file_path):
     return counter
 
 def get_token_vocabulary(token_counter, cutoff=3, maxtokens=None, verbose=1, eos_token=None):
+    """Define token vocabulary."""
     vocab = Vocabulary(eos_token=eos_token)
     total_count = sum(token_counter.values())
     in_vocab_count = 0
@@ -93,14 +100,15 @@ def get_token_vocabulary(token_counter, cutoff=3, maxtokens=None, verbose=1, eos
             in_vocab_count += count
 
     if verbose:
-        OOV_count = total_count - in_vocab_count
-        print('OOV ratio: %.2f%%.' % (100*OOV_count / total_count))
+        oov_count = total_count - in_vocab_count
+        print('OOV ratio: %.2f%%.' % (100*oov_count / total_count))
     return vocab
 
 def get_token_index(file_path, vocab, eos_token=None):
+    """Get index from each token in a file."""
     index_list = []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        for line in file:
             line = line.strip()
             if line:
                 if eos_token is not None:
@@ -110,6 +118,7 @@ def get_token_index(file_path, vocab, eos_token=None):
     return index_list
 
 def get_number_of_samples(idx_list, window_size):
+    """Get number of samples in index list"""
     nsamples = 0
     for line in idx_list:
         if len(line) <= window_size // 2:
@@ -118,6 +127,7 @@ def get_number_of_samples(idx_list, window_size):
     return nsamples
 
 def get_data(idx_list, window_size, pad_index=0):
+    """Get prepared windows to be embed into the model."""
     nsamples = get_number_of_samples(idx_list, window_size)
     winput = np.empty((nsamples, window_size - 1), dtype=np.int32)
     target = np.empty(nsamples, dtype=np.int32)
@@ -129,13 +139,15 @@ def get_data(idx_list, window_size, pad_index=0):
             continue
         ext_line = [pad_index] * left_window + line + [pad_index] * right_window
         for i, token_id in enumerate(line):
-            winput[sample] = ext_line[i:i + left_window] + ext_line[i + left_window + 1:i + window_size]
+            winput[sample] = ext_line[i:i + left_window] + \
+                             ext_line[i + left_window + 1:i + window_size]
             target[sample] = token_id
             sample += 1
     assert nsamples == sample
     return winput, target
 
 def prepare_dataset(params):
+    """Prepared the dataset to be embed into the model."""
     dataset_prefix = params.dataset
     working_prefix = params.working
     cutoff = params.cutoff
@@ -153,7 +165,8 @@ def prepare_dataset(params):
             token_counter = get_token_counter(data_filename_nopunct)
             print(f'Number of Tokens: {sum(token_counter.values())}')
             print(f'Number of different Tokens: {len(token_counter)}')
-            pickle.dump(token_counter, open(f'{data_filename_nopunct}.dic', 'wb'))
+            with open(f'{data_filename_nopunct}.dic', 'wb') as datafile:
+                pickle.dump(token_counter, datafile)
 
             # Token vocabulary
             token_vocab = get_token_vocabulary(token_counter, cutoff=cutoff, maxtokens=maxtokens)
@@ -173,15 +186,15 @@ def prepare_dataset(params):
         np.savez(f'{working_prefix}.{part}.npz', idata=idata, target=target)
     return token_vocab, data
 
-DATASET_ROOT = f'./raw'
-WORKING_ROOT = f'./preprocessed'
+DATASET_ROOT = './raw'
+WORKING_ROOT = './preprocessed'
 DATASET_PREFIX = 'ca.wiki'
 
 for DATASET_VERSION in ["ca-all"]:#os.listdir(DATASET_ROOT):
     # Create working dir
     pathlib.Path(f"{WORKING_ROOT}/{DATASET_VERSION}").mkdir(parents=True, exist_ok=True)
 
-    params = SimpleNamespace(
+    params_def = SimpleNamespace(
         window_size = 7,
         cutoff = 3,
         maxtokens = 100000,
@@ -190,14 +203,14 @@ for DATASET_VERSION in ["ca-all"]:#os.listdir(DATASET_ROOT):
     )
 
     print(f"Processing {DATASET_VERSION}")
-    vocab, data = prepare_dataset(params)
+    tok_vocab, prepared_data = prepare_dataset(params_def)
 
     print('token to index:')
     for word in ['raïm', 'intel·ligent']:
-        index = vocab.get_index(word)
-        print(f'{word} -> {index}')
+        ex_index = tok_vocab.get_index(word)
+        print(f'{word} -> {ex_index}')
 
     print('\nindex to token:')
-    for index in [8428, 7466]:
-        word = vocab.get_token(index)
-        print(f'{index} -> {word}')
+    for ex_index in [8428, 7466]:
+        word = tok_vocab.get_token(ex_index)
+        print(f'{ex_index} -> {word}')
