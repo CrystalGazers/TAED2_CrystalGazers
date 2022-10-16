@@ -6,7 +6,7 @@ class TestClass:
 
     model = model_fn('.')
     accepted_output_test1 = ['va', 'camina', 'esta', 'existeix', 'conegut']
-    accepted_output_test2 = ['va', 'camina', 'dirigeix', 'corre', 'no', 'amaga']
+    accepted_output_test2 = ['va', 'camina', 'esta', 'existeix', 'conegut']
     accepted_output_test3 = ['la', 'altra', 'les', 'quina', 'nova', 'vinent']
 
     def test_one(self):
@@ -22,7 +22,7 @@ class TestClass:
     def test_two(self):
         '''The function checks whether the given input is
         contained in the corresponding accepted output'''
-        input_two = input_fn('{"input": ["la", "noia", "rossa", "a", "la", "biblioteca"]}',
+        input_two = input_fn('{"input": ["un", "monjo", "jove", "per", "la", "muntanya"]}',
                              'application/json')
         pred_two = predict_fn(input_two, self.model)
         out_two = output_fn(pred_two, 'application/json')[1:-1]

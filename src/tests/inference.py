@@ -1,12 +1,12 @@
-import os
 import json
-import pickle
 import logging
+import os
+import pickle
 import sys
+
 import boto3
 import torch
 from transformer import Predictor
-
 
 boto3.setup_default_session(profile_name='cgmaria')
 client = boto3.client('sagemaker-runtime')
@@ -78,7 +78,7 @@ def fetch(text):
         data = {'input': text}
         body = str.encode(json.dumps(data))
         response = client.invoke_endpoint(
-            EndpointName='pytorch-inference-2022-10-15-19-35-33-706',
+            EndpointName='pytorch-inference-2022-10-16-11-01-23-464',
             ContentType='application/json',
             Accept='application/json',
             Body=body
