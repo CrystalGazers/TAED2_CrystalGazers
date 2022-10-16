@@ -1,9 +1,10 @@
 import streamlit as st
 import json
+import matplotlib
 import boto3
 
 #CONFIG
-boto3.setup_default_session(profile_name='cgmiquel')
+boto3.setup_default_session(profile_name='webapi')
 client = boto3.client('sagemaker-runtime')
 #URL = 'https://runtime.sagemaker.eu-west-3.amazonaws.com/endpoints/pytorch-inference-2022-10-15-19-35-33-706/invocations'
 
@@ -14,7 +15,7 @@ def fetch(text):
         data = {'input': text}
         body = str.encode(json.dumps(data))
         response = client.invoke_endpoint(
-            EndpointName='pytorch-inference-2022-10-15-19-35-33-706', 
+            EndpointName='pytorch-inference-2022-10-16-11-01-23-464', 
             ContentType='application/json',
             Accept='application/json',
             Body=body
