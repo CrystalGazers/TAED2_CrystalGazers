@@ -4,7 +4,7 @@ import matplotlib
 import boto3
 
 #CONFIG
-boto3.setup_default_session(profile_name='cgmiquel')
+boto3.setup_default_session(profile_name='webapi')
 client = boto3.client('sagemaker-runtime')
 
 def fetch(text):
