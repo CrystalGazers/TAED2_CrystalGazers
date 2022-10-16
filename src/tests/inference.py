@@ -78,7 +78,7 @@ def fetch(text):
         data = {'input': text}
         body = str.encode(json.dumps(data))
         response = client.invoke_endpoint(
-            EndpointName='pytorch-inference-2022-10-16-11-01-23-464',
+            EndpointName='pytorch-inference-2022-10-16-18-08-04-828',
             ContentType='application/json',
             Accept='application/json',
             Body=body
