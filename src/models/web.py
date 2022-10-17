@@ -34,9 +34,9 @@ try:
     with st.form("test"):
         col1, col2 = st.columns(2)
         with col1:
-            text_left = st.text_input("Input previous words", key="text")
+            text_left = st.text_input("Input previous words", key="text1")
         with col2:
-            text_right = st.text_input("Input following words", key="text")
+            text_right = st.text_input("Input following words", key="text2")
         submitted = st.form_submit_button("Submit")
 
         if submitted:
