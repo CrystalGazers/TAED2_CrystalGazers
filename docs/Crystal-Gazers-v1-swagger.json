@@ -1,0 +1,32 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "version" : "2022-10-17T18:14:47Z",
+    "title" : "Crystal Gazers"
+  },
+  "host" : "59e4tgb4xa.execute-api.eu-west-3.amazonaws.com",
+  "basePath" : "/v1",
+  "schemes" : [ "https" ],
+  "paths" : {
+    "/predicted-word" : {
+      "get" : {
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "200 response",
+            "schema" : {
+              "$ref" : "#/definitions/Empty"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "Empty" : {
+      "type" : "object",
+      "title" : "Empty Schema"
+    }
+  }
+}

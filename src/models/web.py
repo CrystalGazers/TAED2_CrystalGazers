@@ -1,11 +1,10 @@
 import json
 import streamlit as st
 import matplotlib
-import boto3
+import requests
 
 #CONFIG
-boto3.setup_default_session(profile_name='webapi')
-client = boto3.client('sagemaker-runtime')
+URL = "https://59e4tgb4xa.execute-api.eu-west-3.amazonaws.com/v1/predicted-word?words=" 
 
 def fetch(text):
     """Function to post a request to SageMaker endpoint. The input needs to follow the next format:
@@ -13,16 +12,11 @@ def fetch(text):
        the Word word, text needs to be ["Prev1", "Prev2", "Prev3", "Next1", "Next2", "Next3"].
        The output of the request, will be the predicted central word, Word."""
     try:
-        #Sagemaker request
-        data = {'input': text}
-        body = str.encode(json.dumps(data))
-        response = client.invoke_endpoint(
-            EndpointName='pytorch-inference-2022-10-16-18-08-04-828',
-            ContentType='application/json',
-            Accept='application/json',
-            Body=body)
-        res_json = json.loads(response['Body'].read().decode("utf-8"))
-        return res_json, 1
+        words = ",".join(text)
+        #API Gateway request
+        r = requests.get(url = URL + words)
+        res = json.loads(r.text)
+        return res['prediction'], r.status_code
     except Exception as err:
         return err, 0
 
@@ -38,15 +32,19 @@ try:
     #session = requests.Session()
     st.write("Input 6 context word around the word you would like to predict.")
     with st.form("test"):
-        text = st.text_input("Input text", key="text")
+        col1, col2 = st.columns(2)
+        with col1:
+            text_left = st.text_input("Input previous words", key="text")
+        with col2:
+            text_right = st.text_input("Input following words", key="text")
         submitted = st.form_submit_button("Submit")
 
         if submitted:
-            text = text.split()
+            text = text_left.split() + text_right.split()
             if len(text) == 6:
                 st.write("Results")
                 res, status = fetch(text)
-                if status:
+                if status == 200:
                     st.write(res)
                 else:
                     st.error("Error")
