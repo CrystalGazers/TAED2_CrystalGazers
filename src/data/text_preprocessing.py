@@ -195,11 +195,11 @@ for DATASET_VERSION in ["ca-all"]:#os.listdir(DATASET_ROOT):
     pathlib.Path(f"{WORKING_ROOT}/{DATASET_VERSION}").mkdir(parents=True, exist_ok=True)
 
     params_def = SimpleNamespace(
-        window_size = 7,
-        cutoff = 3,
-        maxtokens = 100000,
-        dataset = f'{DATASET_ROOT}/{DATASET_VERSION}/{DATASET_PREFIX}',
-        working = f'{WORKING_ROOT}/{DATASET_VERSION}/{DATASET_PREFIX}',
+        window_size=7,
+        cutoff=3,
+        maxtokens=100000,
+        dataset=f'{DATASET_ROOT}/{DATASET_VERSION}/{DATASET_PREFIX}',
+        working=f'{WORKING_ROOT}/{DATASET_VERSION}/{DATASET_PREFIX}',
     )
 
     print(f"Processing {DATASET_VERSION}")

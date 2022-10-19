@@ -5,15 +5,16 @@ class TestClass:
     the defined by Crystal Gazers predictor model.'''
 
     model = model_fn('.')
-    accepted_output_test1 = ['va', 'camina', 'esta', 'existeix', 'conegut']
-    accepted_output_test2 = ['va', 'camina', 'esta', 'existeix', 'conegut']
-    accepted_output_test3 = ['la', 'altra', 'les', 'quina', 'nova', 'vinent']
+    accepted_output_test1 = ['enamorat', 'cansat', 'embarassat', 'fugint']
+    accepted_output_test2 = ['enamorat', 'cansat', 'embarassat', 'fugint']
+    accepted_output_test3 = ['voleibol', 'futbol', 'tenis', 'equip']
+
 
     def test_one(self):
         '''The function checks whether the given input is
         contained in the corresponding accepted output'''
 
-        input_one = input_fn('{"input": ["un", "monjo", "vell", "per", "la", "muntanya"]}',
+        input_one = input_fn('{"input": ["el", "noi", "està", "de", "sa", "nòvia"]}',
                              'application/json')
         pred_one = predict_fn(input_one, self.model)
         out_one = output_fn(pred_one, 'application/json')[1:-1]
@@ -22,7 +23,7 @@ class TestClass:
     def test_two(self):
         '''The function checks whether the given input is
         contained in the corresponding accepted output'''
-        input_two = input_fn('{"input": ["un", "monjo", "jove", "per", "la", "muntanya"]}',
+        input_two = input_fn('{"input": ["el", "noi", "està", "del", "seu", "nòvio"]}',
                              'application/json')
         pred_two = predict_fn(input_two, self.model)
         out_two = output_fn(pred_two, 'application/json')[1:-1]
@@ -30,7 +31,7 @@ class TestClass:
     def test_three(self):
         '''The function checks whether the given input is
         contained in the corresponding accepted output'''
-        input_three = input_fn('{"input": ["el", "video", "de", "setmana", "passada", "es"]}',
+        input_three = input_fn('{"input": ["la", "jugadora", "de", "va", "guanyar", "molt"]}',
                               'application/json')
         pred_three = predict_fn(input_three, self.model)
         out_three = output_fn(pred_three, 'application/json')[1:-1]
