@@ -6,6 +6,7 @@ import sys
 
 import boto3
 import torch
+import requests
 from transformer import Predictor
 
 boto3.setup_default_session(profile_name='cgmaria')
@@ -71,22 +72,19 @@ def output_fn(predictions, content_type):
     log.info("Output ready")
     return json.dumps(res)
 
-def fetch(text):
-    '''Function that makes a call to the API and returns a prediction'''
-    try:
-        #Sagemaker request
-        data = {'input': text}
-        body = str.encode(json.dumps(data))
-        response = client.invoke_endpoint(
-            EndpointName='pytorch-inference-2022-10-16-18-08-04-828',
-            ContentType='application/json',
-            Accept='application/json',
-            Body=body
-            )
-        res_json = json.loads(response['Body'].read().decode("utf-8"))
-        #print(json.load(response))
-        return res_json, 1
+URL = "https://59e4tgb4xa.execute-api.eu-west-3.amazonaws.com/v1/predicted-word?words="
 
+def fetch(text):
+    """Function to post a request to SageMaker endpoint. The input needs to follow the next format:
+       For the sentence Prev1 Prev2 Prev3 Word Next1 Next2 Next3, where the model needs to predict
+       the Word word, text needs to be ["Prev1", "Prev2", "Prev3", "Next1", "Next2", "Next3"].
+       The output of the request, will be the predicted central word, Word."""
+    try:
+        words = ",".join(text)
+        #API Gateway request
+        r = requests.get(url=URL+words)
+        res = json.loads(r.text)
+        return res['prediction'], r.status_code
     except Exception as err:
         return err, 0
     
