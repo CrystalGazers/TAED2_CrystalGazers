@@ -16,10 +16,11 @@ if __name__ =='__main__':
     parser.add_argument('--use-cuda', type=bool, default=False)
     parser.add_argument('--embedding_dim', type=int, default=256)
     parser.add_argument('--num_heads', type=int, default=1)
+    parser.add_argument('--dataset_prefix', type=str, default='ca.wiki')
 
     # Data, model, and output directories
     parser.add_argument('--output-data-dir', type=str, default=os.environ['SM_OUTPUT_DATA_DIR'])
-    parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
+    parser.add_argument('--model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAIN'])
     # parser.add_argument('--test', type=str, default=os.environ['SM_CHANNEL_TEST'])
 
@@ -61,8 +62,6 @@ class Vocabulary(object):
     def load(self, filename):
         with open(filename, 'rb') as f:
             self.__dict__.update(pickle.load(f))
-        # f = download_s3(args.SM_CHANNEL_TRAIN, filename)
-        # self.__dict__.update(pickle.load(f))
 
 
 def batch_generator(idata, target, batch_size, shuffle=True):
@@ -161,15 +160,12 @@ def validate(model, criterion, idata, target, batch_size, device):
 # Select device
 if torch.cuda.is_available():
     device = torch.device('cuda')
-elif torch.backends.mps.is_available():
-    device = torch.device('mps')
-    print("Training on MPS")
 else:
     device = torch.device('cpu')
     print("WARNING: Training without GPU can be very slow!")
 
 # Change this according to config
-vocab, data = load_preprocessed_dataset(args.SM_CHANNEL_TRAIN)
+vocab, data = load_preprocessed_dataset(args.train + '/' + args.dataset_prefix)
 
 # Load model
 model = Predictor(len(vocab), args.embedding_dim, num_heads=args.num_heads).to(device)
@@ -195,3 +191,8 @@ for epoch in range(args.epochs):
     acc, loss = validate(model, criterion, data[1][0], data[1][1], args.batch_size, device)
     wiki_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
+    
+model_path = os.path.join(args.model_dir, 'model.pth')
+
+with open(model_path, 'wb') as f:
+    torch.save(model.cpu().state_dict(), f)
