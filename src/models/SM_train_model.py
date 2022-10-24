@@ -26,7 +26,8 @@ if __name__ =='__main__':
 
     args, _ = parser.parse_known_args()
 
-class Vocabulary(object):
+class Vocabulary():
+    """This class defines the vocabulary that the NLP model will work with."""
     def __init__(self, pad_token='<pad>', unk_token='<unk>', eos_token='<eos>'):
         self.token2idx = {}
         self.idx2token = []
@@ -41,30 +42,35 @@ class Vocabulary(object):
             self.eos_index = self.add_token(eos_token)
 
     def add_token(self, token):
+        """Function to add a new token."""
         if token not in self.token2idx:
             self.idx2token.append(token)
             self.token2idx[token] = len(self.idx2token) - 1
         return self.token2idx[token]
 
     def get_index(self, token):
+        """Get index from token."""
         if isinstance(token, str):
             return self.token2idx.get(token, self.unk_index)
-        else:
-            return [self.token2idx.get(t, self.unk_index) for t in token]
+        return [self.token2idx.get(t, self.unk_index) for t in token]
 
     def __len__(self):
+        """Return length of vocabulary."""
         return len(self.idx2token)
 
     def save(self, filename):
+        """Save vocabulary into pickle file."""
         with open(filename, 'wb') as f:
             pickle.dump(self.__dict__, f)
 
     def load(self, filename):
+        """Load vocabulary from pickle file."""
         with open(filename, 'rb') as f:
             self.__dict__.update(pickle.load(f))
 
 
 def batch_generator(idata, target, batch_size, shuffle=True):
+    """Generator of data batches to train the model."""
     nsamples = len(idata)
     if shuffle:
         perm = np.random.permutation(nsamples)
@@ -80,12 +86,13 @@ def batch_generator(idata, target, batch_size, shuffle=True):
 
 
 def load_preprocessed_dataset(prefix):
+    """Load preprocessed dataset from s3 bucket."""
     # Try loading precomputed vocabulary and preprocessed data files
     token_vocab = Vocabulary()
     token_vocab.load(f'{prefix}.vocab')
     data = []
     for part in ['train', 'valid']:
-         with np.load(f'{prefix}.{part}.npz') as set_data:
+        with np.load(f'{prefix}.{part}.npz') as set_data:
             idata, target = set_data['idata'], set_data['target']
             data.append((idata, target))
             print(f'Number of samples ({part}): {len(target)}')
@@ -95,6 +102,7 @@ def load_preprocessed_dataset(prefix):
 
 
 def train(model, criterion, optimizer, idata, target, batch_size, device, log=False):
+    """Train Transformer model with the defined parameters."""
     model.train()
     total_loss = 0
     ncorrect = 0
@@ -116,15 +124,18 @@ def train(model, criterion, optimizer, idata, target, batch_size, device, log=Fa
         ntokens += y.numel()
         niterations += 1
         if niterations == 200 or niterations == 500 or niterations % 1000 == 0:
-            print(f'Train: wpb={ntokens//niterations}, num_updates={niterations}, accuracy={100*ncorrect/ntokens:.1f}, loss={total_loss/ntokens:.2f}')
+            print(f'Train: wpb={ntokens//niterations}, num_updates={niterations}, \
+                accuracy={100*ncorrect/ntokens:.1f}, loss={total_loss/ntokens:.2f}')
 
     total_loss = total_loss / ntokens
     accuracy = 100 * ncorrect / ntokens
     if log:
-        print(f'Train: wpb={ntokens//niterations}, num_updates={niterations}, accuracy={accuracy:.1f}, loss={total_loss:.2f}')
+        print(f'Train: wpb={ntokens//niterations}, num_updates={niterations}, \
+            accuracy={accuracy:.1f}, loss={total_loss:.2f}')
     return accuracy, total_loss
 
 def validate(model, criterion, idata, target, batch_size, device):
+    """Function to validate Transformer model."""
     model.eval()
     total_loss = 0
     ncorrect = 0
@@ -151,8 +162,7 @@ def validate(model, criterion, idata, target, batch_size, device):
         total_loss = total_loss / ntokens
         accuracy = 100 * ncorrect / ntokens
         return accuracy, total_loss
-    else:
-        return np.concatenate(y_pred)
+    return np.concatenate(y_pred)
 
 # Create working dir (check this!!)
 # pathlib.Path(WORKING_ROOT).mkdir(parents=True, exist_ok=True)
@@ -185,13 +195,13 @@ train_accuracy = []
 wiki_accuracy = []
 valid_accuracy = []
 for epoch in range(args.epochs):
-    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], args.batch_size, device, log=True)
+    acc, loss = train(model, criterion, optimizer, data[0][0], data[0][1], \
+        args.batch_size, device, log=True)
     train_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | train accuracy={acc:.1f}%, train loss={loss:.2f}')
     acc, loss = validate(model, criterion, data[1][0], data[1][1], args.batch_size, device)
     wiki_accuracy.append(acc)
     print(f'| epoch {epoch:03d} | valid accuracy={acc:.1f}%, valid loss={loss:.2f} (wikipedia)')
-    
 model_path = os.path.join(args.model_dir, 'model.pth')
 
 with open(model_path, 'wb') as f:

@@ -1,12 +1,13 @@
-from transformer import Predictor
 import os
-import torch
 import json
 import pickle
 import logging
 import sys
-import boto3
 import io
+import boto3
+import torch
+from transformer import Predictor
+
 
 handler = logging.StreamHandler(sys.stdout)
 logging.basicConfig(
@@ -16,6 +17,7 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 def download_s3():
+    """Function to download known vocabulary from s3 bucket."""
     s3_client = boto3.client('s3')
     obj = s3_client.get_object(Bucket='crystal-gazers', Key='preprocessed/ca-100/ca.wiki.vocab')
     f = io.BytesIO(obj["Body"].read())
@@ -26,7 +28,9 @@ token2idx = file['token2idx']
 idx2token = file['idx2token']
 len_vocab = len(idx2token)
 emb_size = 256
+
 def model_fn(model_dir):
+    """Function to instanciate the model."""
     model = Predictor(len_vocab, emb_size)
     device = torch.device("cpu")
     model_dir = os.path.join(model_dir, "model.pth")
@@ -36,6 +40,7 @@ def model_fn(model_dir):
     return model
 
 def input_fn(request_body, request_content_type):
+    """Function to parse the input and input type, it converts words to tokens."""
     log.info("Starting input")
     assert request_content_type=='application/json'
     device = torch.device("cpu")
@@ -52,6 +57,7 @@ def input_fn(request_body, request_content_type):
     return tokens
 
 def predict_fn(input_object, model):
+    """Function that carries out the prediction"""
     log.info("Starting prediction")
     with torch.no_grad():
         prediction = model(input_object)
@@ -62,6 +68,7 @@ def predict_fn(input_object, model):
     return pred
 
 def output_fn(predictions, content_type):
+    """Function to parse the output and set output type."""
     log.info("Starting output")
     assert content_type == 'application/json'
     res = {"prediction": predictions}
