@@ -21,7 +21,7 @@ tags:
 - articles
 - educational
 task_categories:
-- text-generation
+- text-prediction
 task_ids:
 - language-modeling
 ---
@@ -33,11 +33,11 @@ task_ids:
 
 ### Dataset summary
 
-The Wikipedia dataset is a collection of scraped Wikipedia pages. The dataset is defined in catalan language, thus the model will be trained to recognize input exclusively in catalan.
+The Wikipedia dataset is a collection of scraped Wikipedia pages. The dataset is defined in catalan language, thus the model is trained to recognize input exclusively in catalan.
 
 ### Supported tasks
 
-Text generation
+Text prediction
 
 ### Languages
 
@@ -48,24 +48,13 @@ Catalan
 ```
 {
   'ca-2': [
-    'ca.wiki.test.tokens.nopunct',
-    'ca.wiki.test.npz',
-    'ca.wiki.train.tokens.nopunct',
-    'ca.wiki.train.tokens.nopunct.dic',
-    'ca.wiki.train.npz',
-    'ca.wiki.valid.tokens.nopunct',
-    'ca.wiki.valid.npz']
+    'ca.wiki.test.tokens',
+    'ca.wiki.train.tokens',
+    'ca.wiki.valid.tokens']
   'ca-100': [
     'ca.wiki.test.tokens',
-    'ca.wiki.test.tokens.nopunct',
-    'ca.wiki.test.npz',
     'ca.wiki.train.tokens',
-    'ca.wiki.train.tokens.nopunct',
-    'ca.wiki.train.tokens.nopunct.dic',
-    'ca.wiki.train.npz',
-    'ca.wiki.valid.tokens',
-    'ca.wiki.valid.tokens.nopunct',
-    'ca.wiki.valid.npz']
+    'ca.wiki.valid.tokens']
 }
 ```
 
@@ -76,12 +65,10 @@ Catalan
 
 ### Data splits
 
-Reporting the sizes of the ```.token.nopunct``` files
-
 |                         | train  | validation | test |
 |-------------------------|-------:|-----------:|-----:|
-| ca-2                    |9.1MB   |1.0MB       |1.0MB|
-| ca-100                  |451.8MB |1.0MB       |1.0MB|
+| ca-2                    |11MB    |1.1MB       |1.1MB |
+| ca-100                  |505MB   |1.1MB       |1.1MB |
 
 ## Dataset creation
 
@@ -94,4 +81,3 @@ The dataset has no annotations as the files only contain the plain text from the
 ## Considerations for Using the Data
 
 The content has not been reviewed nor filtered by the authors of the dataset. It is supposed to have been reviewed by the Wikipedia community of volunteers to guarantee its veracity, lack of sensible or private content, and neutrality with respect to possible biases. Nonetheless, there's no guarantee that all 100% of the text has surpassed this review, or an indication of what text has been reviewed or not.
-
