@@ -60,8 +60,7 @@ Catalan
 
 ### Data fields
 
-- ```.token``` files: plain text
-- ```.npz files```: Two .npy arrays of vocabulary indexes, one for 6 context words and one for target central word. Each line in one corresponds with a line in other.
+Plain text
 
 ### Data splits
 
